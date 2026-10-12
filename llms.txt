@@ -4,16 +4,16 @@
 > endpoint — vLLM, llama.cpp server, Ollama's OpenAI API, LM Studio, and the like. Pure Python,
 > built on [Textual](https://github.com/Textualize/textual), no cloud lock-in. Home page:
 > [https://sekka.org/](https://sekka.org/); source:
-> [https://github.com/nkavassalis/sekka](https://github.com/nkavassalis/sekka).
+> [https://github.com/evulnet/sekka](https://github.com/evulnet/sekka).
 
 ## Source and documentation
 
-- [Repository](https://github.com/nkavassalis/sekka): Python >= 3.10, MIT licensed, `main` is the default branch.
-- [README (raw Markdown)](https://raw.githubusercontent.com/nkavassalis/sekka/main/README.md): features, install, usage, slash commands, key bindings.
+- [Repository](https://github.com/evulnet/sekka): Python >= 3.10, MIT licensed, `main` is the default branch.
+- [README (raw Markdown)](https://raw.githubusercontent.com/evulnet/sekka/main/README.md): features, install, usage, slash commands, key bindings.
 - [Configuration reference](https://sekka.org/docs/configuration.md): every CLI flag, environment variable and config-file key.
-- [AGENTS.md (raw Markdown)](https://raw.githubusercontent.com/nkavassalis/sekka/main/AGENT.md): an agent-oriented map of the codebase.
-- [Campaign pack example](https://github.com/nkavassalis/sekka/tree/main/examples/frostspire): a tabletop campaign as an installable pack - character cards, world lore and location briefs exposed as tools.
-- [Workflow knowledge-base example](https://github.com/nkavassalis/sekka/tree/main/examples/medical-practice): a hypothetical clinic's front-desk SOPs the model consults step by step.
+- [AGENTS.md (raw Markdown)](https://raw.githubusercontent.com/evulnet/sekka/main/AGENT.md): an agent-oriented map of the codebase.
+- [Campaign pack example](https://github.com/evulnet/sekka/tree/main/examples/frostspire): a tabletop campaign as an installable pack - character cards, world lore and location briefs exposed as tools.
+- [Workflow knowledge-base example](https://github.com/evulnet/sekka/tree/main/examples/medical-practice): a hypothetical clinic's front-desk SOPs the model consults step by step.
 
 ## What it is, briefly
 
@@ -30,8 +30,8 @@
 ## Install
 
 ```bash
-pipx install git+https://github.com/nkavassalis/sekka.git
-# or: uv tool install git+https://github.com/nkavassalis/sekka.git
+pipx install git+https://github.com/evulnet/sekka.git
+# or: uv tool install git+https://github.com/evulnet/sekka.git
 # or from a clone: pip install -e .
 ```
 

@@ -1,6 +1,6 @@
 # AGENT.md — maintainer notes for sekka
 
-**Project mode: REAL** (public GitHub repo under `nkavassalis`, full test suite
+**Project mode: REAL** (public GitHub repo under `evulnet`, full test suite
 must pass before any push, README + AGENT.md kept current).
 
 Hard-won context for anyone (human or agent) working on this repo. Ordered by

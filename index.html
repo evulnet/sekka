@@ -76,9 +76,9 @@ anything else that speaks the OpenAI API: vLLM, llama.cpp's server, Ollama, LM S
 at an endpoint and start typing.</p>
 
 <nav class="links" aria-label="Project links">
-  <a href="https://github.com/nkavassalis/sekka">Source on GitHub</a>
-  <a href="https://github.com/nkavassalis/sekka#readme">README</a>
-  <a href="https://github.com/nkavassalis/sekka/blob/main/docs/configuration.md">Configuration</a>
+  <a href="https://github.com/evulnet/sekka">Source on GitHub</a>
+  <a href="https://github.com/evulnet/sekka#readme">README</a>
+  <a href="https://github.com/evulnet/sekka/blob/main/docs/configuration.md">Configuration</a>
 </nav>
 
 <div class="term" role="img" aria-label="A sketch of the Sekka terminal interface">
@@ -98,7 +98,7 @@ model to summarise them into one message first, so less is forgotten.
 reply took, and how much of the context window you've used.</p>
 
 <h2>start</h2>
-<pre><code>pipx install git+https://github.com/nkavassalis/sekka.git
+<pre><code>pipx install git+https://github.com/evulnet/sekka.git
 pipx inject sekka textual-serve        # optional: browser mode (sekka serve)
 sekka --endpoint http://my-gpu-box:8000/v1</code></pre>
 <p>If you don't name a model, Sekka asks the endpoint which ones it serves and lets you pick (or
@@ -166,9 +166,9 @@ newer, and nothing heavier than Textual and Requests: the endpoint does the real
 
 <h2>examples</h2>
 <p>The repository ships two starting points, both entirely made up. One is a
-<a href="https://github.com/nkavassalis/sekka/tree/main/examples/frostspire">tabletop game</a>
+<a href="https://github.com/evulnet/sekka/tree/main/examples/frostspire">tabletop game</a>
 where character cards and setting notes are tools the model consults as it narrates. The other is
-a <a href="https://github.com/nkavassalis/sekka/tree/main/examples/medical-practice">front-desk
+a <a href="https://github.com/evulnet/sekka/tree/main/examples/medical-practice">front-desk
 assistant for a fictional clinic</a> that looks up check-in, insurance and refill procedures step
 by step. Install the game with <code>sekka pack install</code> and play it with <code>--pack</code>, or copy either one, run Sekka inside it, and change the files to suit.</p>
 
@@ -179,7 +179,7 @@ time.</p>
 
 <footer>MIT licensed. Built with <a href="https://github.com/Textualize/textual">Textual</a>, and
 built by Qwen 3.8 Flash Next. Source and issues on
-<a href="https://github.com/nkavassalis/sekka">GitHub</a>. ⚡🇨🇦</footer>
+<a href="https://github.com/evulnet/sekka">GitHub</a>. ⚡🇨🇦</footer>
 </main>
 </body>
 </html>

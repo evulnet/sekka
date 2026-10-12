@@ -74,10 +74,10 @@ can put the identical screen in a browser instead.
 ## Install
 
 ```bash
-pipx install git+https://github.com/nkavassalis/sekka.git
+pipx install git+https://github.com/evulnet/sekka.git
 ```
 
-(or `uv tool install git+https://github.com/nkavassalis/sekka.git`, or from a
+(or `uv tool install git+https://github.com/evulnet/sekka.git`, or from a
 clone: `pip install -e .`). Requires Python >= 3.10; dependencies: `textual`,
 `requests`. Sekka is pure Python on purpose - the endpoint does the heavy
 lifting, so bundled-binary builds (Nuitka/PyInstaller) would add ~50 MB for
