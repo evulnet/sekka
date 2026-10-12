@@ -456,12 +456,32 @@ Colors accept anything [rich](https://rich.readthedocs.io/) understands:
 - `error` — error notices
 
 Prefer the `bright_*` names, a 256-colour name like `gold1`, or an explicit hex.
-The bare basic names (`cyan`, `yellow`, `red`, `magenta`) are the *dark* members
-of the ANSI set - `cyan` is `#008080`, `yellow` is `#808000`, `red` is `#800000`.
-In a terminal you rarely notice, because the terminal substitutes its own palette
-for those slots and most palettes brighten them; a browser (and any truecolor
-rendering) paints the literal value, and the whole UI reads faint. That is why the
-defaults name the bright variants outright.
+The bare basic names (`cyan`, `yellow`, `red`, `magenta`) are the *dark* members of
+the ANSI set - `cyan` is `#008080`, `yellow` is `#808000`, `red` is `#800000`,
+`magenta` is `#800080`, which is 2.0:1 against sekka's background and genuinely hard
+to read. They look dark **in a terminal too**, not just in a browser: sekka resolves
+a color name to an RGB triple and asks for it in truecolor, which is what every
+modern terminal reports supporting, so the number is honoured rather than remapped to
+a palette slot. (Only a terminal that reports 16- or 256-colour support substitutes
+its own palette - which is why the same config can look fine on one machine and murky
+on another, and why "it was fine in my terminal" is not a reason to keep the dark one.)
+That is why the defaults name the bright variants outright.
+
+**A `theme` block replaces the defaults wholesale**, key by key, and it is the most
+common way sekka ends up looking dim: a config copied out of an older example, or one
+hand-written before the palette was brightened, keeps pinning the dark basics and no
+warning appears in the UI. sekka now checks at startup and says so -
+
+```
+Some theme colors are too dark to read on this background: error 1.7:1, assistant 2.0:1.
+They come from /path/to/.sekka/config.json; deleting that block inherits sekka's bright
+defaults, or set them individually in /config.
+```
+
+The floor is the WCAG AA ratio for body text (4.5:1) measured against the app
+background. Nothing is rewritten behind your back: if you set a colour sekka paints
+it, it just tells you when the result is unreadable. Deleting the `theme` block (or the
+offending keys in it) is the usual fix.
 
 The rest of the screen - text, borders, panel fills - is not in this file. sekka
 registers its own Textual theme (`sekka`) instead of inheriting `textual-dark`,

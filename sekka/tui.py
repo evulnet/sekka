@@ -30,9 +30,11 @@ from textual.widgets import Button, Checkbox, DirectoryTree, Input, Label, ListI
 
 from . import client, commands, dice, storage
 from .config import (
+    APP_BACKGROUND,
     DEFAULT_CONFIG,
     Config,
     deep_merge,
+    theme_legibility,
     remember_cli_values,
     save_campaign_values,
     save_config,
@@ -58,7 +60,8 @@ SEKKA_THEME = Theme(
     name="sekka",
     primary="#00afff",        # borders + focus: was #0178D4
     secondary="#5f87d7",      # file-picker / knowledge borders: was #004578
-    background="#121212",     # stay terminal-dark; brightness comes from the ink
+    background=APP_BACKGROUND,  # terminal-dark; brightness comes from the ink.
+                            # The legibility check measures against this exact value.
     surface="#1e1e1e",
     panel="#24343c",
     foreground="#ffffff",     # was #E0E0E0
@@ -738,7 +741,21 @@ class SekkaApp(App):
             title += f" - {model}"
         self.title = title
         self.query_one("#input", TextArea).focus()
-        theme = self.config.theme
+        dim = theme_legibility(self.config.theme)
+        if dim:
+            # A config file's `theme` block replaces the bright defaults wholesale, so a
+            # stale one (or a pack copied out of an old example) puts the ink back to
+            # #800080 grade and the UI just looks "dim" for a reason nobody can name.
+            # Report which colors and where the file is; never silently rewrite what the
+            # player configured.
+            offenders = ", ".join(f"{key} {ratio:.1f}:1" for key, _value, ratio in dim)
+            source = str(self.config.path) if self.config.path else "your config"
+            self._sys(
+                f"Some theme colors are too dark to read on this background: {offenders}. "
+                f"They come from {source}; deleting that block inherits sekka's bright "
+                f"defaults, or set them individually in /config.",
+                error=True,
+            )
         self._append(
             f"sekka - endpoint {self.config['endpoint']}"
             + (f" - model {model}" if model else " (no model selected)")

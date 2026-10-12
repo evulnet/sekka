@@ -12,6 +12,9 @@ Hard-won context for anyone (human or agent) working on this repo. Ordered by
   Building/verifying artifacts locally is fine.
 - **`CNAME` must stay in the commit** or sekka.org stops resolving via Pages.
   `.nojekyll` must stay too.
+- **The repo lives in the `evulnet` org** (`github.com/evulnet/sekka`), moved from
+  `nkavassalis` on 2026-10-09. The old path 301-redirects, but write new links against
+  `evulnet`; do not "restore" an `nkavassalis` URL you find in an old commit.
 - `.sekka/` is gitignored — never commit the local dev config.
 
 ## Textual gotchas (each cost real debugging time)
@@ -354,26 +357,36 @@ is called for changed keys only. Don't simplify this back to writing
     prompt prefix and so invalidates backend prompt caching - accepted, and the
     reason the cap exists; do not raise it casually.
   - `always` entries load at mount (`_load_always_lore`), before the greeting.
-- **Theme colors are painted literally in the browser, so the default palette names
-  bright colors.** The served session runs with `TEXTUAL_COLOR_SYSTEM=truecolor`, and the
-  basic ANSI names are the *dark* half of the set (`cyan` = `#008080`, `yellow` =
-  `#808000`, `red` = `#800000`). In a terminal the emulator substitutes its own palette
-  for those slots and most palettes brighten them, so the identical theme reads bright
-  there and faint in the browser - the fix was the palette, not the page. Defaults are
-  now `bright_cyan` / `violet` / `gold1` / `grey66` / `bright_red`, and
-  `test_default_theme_colors_are_bright_enough` rejects any default whose brightest
-  channel falls under 160. Measured mean ink luminance on the boot screen: 102 -> 166.
-  Note a user's own config file wins over these defaults (sekka's merge is per-key), so
-  an existing `theme` block keeps the old colors until edited.
-- **Brightness: sekka registers its own Textual theme (`SEKKA_THEME` in tui.py), do
-  not fall back to `textual-dark`.** That theme is written for a *terminal palette*:
-  text at 87% luminance, `text_alpha=0.95`, foreground `#E0E0E0`, borders
-  `primary=#0178D4` (luminance ~101). A terminal hides this by substituting its own
-  palette for the ANSI slots; a browser (textual-serve runs in truecolor) paints those
-  numbers literally, which is what "the web UI looks faint" meant. The registered
-  theme asks for `#ffffff` text, `text_alpha=1.0`, `text: auto 100%`,
-  `primary=#00afff`, `secondary=#5f87d7`. Registered in `on_mount`, so any test that
-  asserts on colors must run after mount.
+- **Dark text has one real cause: a `theme` block pinning the basic ANSI names, and it is
+  dim in the terminal too.** An earlier note here claimed a terminal "substitutes its own
+  palette" for `cyan`/`magenta`/`red` so the same theme read bright there. That was wrong
+  and it sent a debugging hour the wrong way: rich resolves a name to an RGB triple and
+  Textual asks for it in truecolor, which any modern terminal honours, so `magenta` paints
+  `#800080` (2.0:1 against `#121212`) in a terminal exactly as in a browser. Palette
+  substitution only happens when the terminal reports 16- or 256-colour support, which is
+  why one machine can look fine and another murky on the identical file.
+  What actually happened: a pack copied out of the old example carried
+  `"theme": {"user":"cyan","assistant":"magenta",...}` in its own `.sekka/config.json`,
+  and a config file's `theme` replaces the bright defaults key by key. The web CSS was
+  never the cause; the example configs were fixed and the user's copy lost its `theme`
+  block, so it inherits the defaults now.
+  **The guard, not the guess:** `config.theme_legibility()` measures every theme color
+  against `APP_BACKGROUND` (WCAG relative luminance, floor `MIN_TEXT_CONTRAST = 4.5`) and
+  `on_mount` prints one system line naming the offenders with their ratios and the file
+  they came from. It never rewrites a configured color - an explicit line wins, it just has
+  to admit it is unreadable. Do not "fix" this by brightening values in code, and do not
+  delete the warning because it is noisy: it is the only visible symptom of the trap.
+- **The default palette is bright on purpose** (`bright_cyan` / `#d7afff` / `gold1` /
+  `grey84` / `#ff5f5f`); `test_default_theme_colors_are_bright_enough` plus
+  `tests/test_config.py`'s contrast tests reject a dim default. Measured mean ink luminance
+  on the boot screen across this work: 102 -> 166 -> 172.
+- **sekka registers its own Textual theme (`SEKKA_THEME` in tui.py); do not fall back to
+  `textual-dark`.** That theme is written for a terminal palette rather than literal
+  pixels: text at 87% luminance, `text_alpha=0.95`, foreground `#E0E0E0`, borders
+  `primary=#0178D4` (luminance ~101). The registered theme asks for `#ffffff` text,
+  `text_alpha=1.0`, `text: auto 100%`, `primary=#00afff`, `secondary=#5f87d7`, and
+  `APP_BACKGROUND` in config.py must keep matching its `background`. Registered in
+  `on_mount`, so any test that asserts on colors must run after mount.
 - **Measuring "faint" needs composited pixels.** `canvas.getImageData()` reads the
   backing store: it cannot see a CSS `filter`, and it averages over ~99% background,
   so it measures stroke coverage rather than colour. Screenshot the page, decode it

@@ -2176,3 +2176,56 @@ def test_export_wording_differs_when_served(monkeypatch):
             assert "check your browser's downloads" in text
             assert "downloads folder" not in text
     asyncio.run(go())
+
+
+def test_dark_theme_colors_are_reported_at_boot():
+    """A stale `theme` block makes the UI look dim with no visible cause. Say why."""
+    async def go():
+        config = make_config(theme={
+            "user": "cyan", "assistant": "magenta", "system": "yellow",
+            "stats": "grey58", "error": "red",
+        })
+        app = SekkaApp(config)
+        async with app.run_test() as pilot:
+            await pilot.pause()
+            text = history_text(app)
+            assert "too dark to read" in text
+            assert "assistant" in text and "error" in text      # named, worst first
+            assert "1.99:1" in text or "2.0:1" in text          # with the measured ratio
+        return True
+
+    import asyncio
+    assert asyncio.run(go())
+
+
+def test_shipped_theme_boots_without_a_legibility_warning():
+    async def go():
+        app = SekkaApp(make_config())
+        async with app.run_test() as pilot:
+            await pilot.pause()
+            assert "too dark to read" not in history_text(app)
+        return True
+
+    import asyncio
+    assert asyncio.run(go())
+
+
+def test_the_terminal_path_paints_the_same_bright_hexes_the_css_uses():
+    """The TUI and the browser consume the same variables, so lock the TUI's too."""
+    async def go():
+        app = SekkaApp(make_config())
+        async with app.run_test() as pilot:
+            await pilot.pause()
+            variables = app.get_css_variables()
+            assert variables["sekka-user"] == "#00ffff"
+            assert variables["sekka-assistant"] == "#d7afff"
+            assert variables["sekka-stats"] == "#d7d7d7"
+            theme = app.current_theme
+            assert theme.name == "sekka"                    # not textual-dark
+            assert theme.text_alpha == 1.0                  # no blanket text dimming
+            assert theme.foreground == "#ffffff"
+            assert theme.variables["text"] == "auto 100%"   # textual-dark ships auto 87%
+        return True
+
+    import asyncio
+    assert asyncio.run(go())

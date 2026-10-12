@@ -390,3 +390,43 @@ def test_default_theme_colors_are_bright_enough():
         assert peak(color) >= 160, f"default theme color {role}={color} is too dark"
     # and the names must stay parseable by rich, as documented
     assert set(theme) == {"user", "assistant", "system", "stats", "error"}
+
+
+# ------------------------------------------------------------ legibility guard
+
+
+def test_named_defaults_all_clear_the_contrast_floor():
+    from sekka.config import MIN_TEXT_CONTRAST, contrast_ratio, theme_legibility
+
+    for key, value in DEFAULT_CONFIG["theme"].items():
+        assert contrast_ratio(value) >= MIN_TEXT_CONTRAST, f"{key}={value}"
+    assert theme_legibility(DEFAULT_CONFIG["theme"]) == []
+
+
+def test_the_dark_ansi_basics_are_caught_not_silently_painted():
+    """The exact theme block that shipped in an example once, and haunted a pack."""
+    from sekka.config import theme_legibility
+
+    dim = dict(user="cyan", assistant="magenta", system="yellow", stats="grey58", error="red")
+    offenders = {key for key, _value, _ratio in theme_legibility(dim)}
+    assert {"assistant", "error", "user"} <= offenders
+    # ranked worst-first, so the message leads with the ink you cannot read at all
+    worst = theme_legibility(dim)[0]
+    assert worst[0] == "error" and worst[2] < 2.5
+
+
+def test_bright_names_pass_and_hex_is_measured_not_assumed():
+    from sekka.config import theme_legibility
+
+    assert theme_legibility({"user": "bright_cyan", "assistant": "#d7afff"}) == []
+    assert theme_legibility({"user": "#000000"})[0][2] < 1.5      # ink on ink
+    assert theme_legibility({"user": "not-a-colour"}) == []       # validated elsewhere
+
+
+def test_a_partial_theme_is_still_checked():
+    from sekka.config import theme_legibility
+
+    assert [row[0] for row in theme_legibility({"stats": "grey35"})] == ["stats"]
+    assert theme_legibility({}) == []
+    assert theme_legibility(None) == []
+    assert theme_legibility({"user": 42}) == []          # validated as a shape problem
