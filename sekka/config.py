@@ -76,6 +76,60 @@ MAX_LORE_KEYWORDS = 20
 MAX_LORE_KEYWORD_CHARS = 64
 
 
+APP_BACKGROUND = "#121212"          # must match SEKKA_THEME.background in tui.py
+MIN_TEXT_CONTRAST = 4.5             # WCAG AA for body text
+
+
+def _relative_luminance(color: str) -> Optional[float]:
+    """WCAG relative luminance of a hex color, or of a named one via rich.
+
+    None when the string is not a color at all: validate_config reports that on its own,
+    and scoring it as black would turn a typo into a bogus contrast complaint.
+    """
+    try:
+        rgb = Color.parse(color).get_truecolor()
+    except (ColorParseError, AttributeError, ValueError):
+        return None
+    channels = []
+    for value in (rgb.red, rgb.green, rgb.blue):
+        channel = value / 255
+        channels.append(channel / 12.92 if channel <= 0.03928 else ((channel + 0.055) / 1.055) ** 2.4)
+    red, green, blue = channels
+    return 0.2126 * red + 0.7152 * green + 0.0722 * blue
+
+
+def contrast_ratio(foreground: str, background: str = APP_BACKGROUND) -> Optional[float]:
+    """WCAG contrast ratio between two colors, 1.0 (invisible) to 21.0."""
+    light, dark = _relative_luminance(foreground), _relative_luminance(background)
+    if light is None or dark is None:
+        return None
+    if light < dark:
+        light, dark = dark, light
+    return (light + 0.05) / (dark + 0.05)
+
+
+def theme_legibility(theme: Any, background: str = APP_BACKGROUND) -> list[tuple[str, str, float]]:
+    """Theme colors too dark to read on the app background, worst first.
+
+    The trap this watches: the defaults are bright, but a `theme` block in a config file
+    replaces them wholesale - and a config written before that (or copied out of an old
+    example) can still name the dark ANSI basics. `magenta` is not a terminal palette
+    slot here: rich resolves it to `#800080` and Textual sends truecolor, so it paints
+    the same unreadable ink in a terminal as in a browser. Warn rather than silently
+    override: an explicit config line wins, it just also has to admit it is unreadable.
+    """
+    if not isinstance(theme, dict):
+        return []
+    offenders = []
+    for key, value in theme.items():
+        if not isinstance(value, str) or not value.strip():
+            continue
+        ratio = contrast_ratio(value, background)
+        if ratio is not None and ratio < MIN_TEXT_CONTRAST:
+            offenders.append((str(key), str(value), ratio))
+    return sorted(offenders, key=lambda row: row[2])
+
+
 def _validate_knowledge_entries(entries: Any, where: str) -> None:
     """Shared shape check for knowledge entries (config file and campaign file)."""
     if not isinstance(entries, list):
